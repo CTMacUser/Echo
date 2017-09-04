@@ -4,6 +4,7 @@
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12121"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <capability name="stacking Non-gravity area distributions on NSStackView" minToolsVersion="7.0" minSystemVersion="10.11"/>
     </dependencies>
     <scenes>
         <!--Application-->
@@ -682,13 +683,208 @@
             <objects>
                 <viewController id="XfG-lQ-9wD" customClass="ViewController" customModule="Echo" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" wantsLayer="YES" id="m2S-Jp-Qdl">
-                        <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
+                        <rect key="frame" x="0.0" y="0.0" width="480" height="145"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wNa-ww-66O">
+                                <rect key="frame" x="20" y="103" width="215" height="22"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Server" drawsBackground="YES" id="VzS-2X-00y">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                    <binding destination="XfG-lQ-9wD" name="enabled" keyPath="self.connected" id="Wmo-4S-KgD">
+                                        <dictionary key="options">
+                                            <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                        </dictionary>
+                                    </binding>
+                                </connections>
+                            </textField>
+                            <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SYj-ht-TSB">
+                                <rect key="frame" x="243" y="103" width="52" height="22"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="52" id="A6U-0s-Qrm"/>
+                                </constraints>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="7" drawsBackground="YES" id="Lhy-c8-bOH">
+                                    <numberFormatter key="formatter" formatterBehavior="default10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" maximumFractionDigits="3" id="2ZC-Rj-jht">
+                                        <real key="minimum" value="1"/>
+                                        <real key="maximum" value="65535"/>
+                                    </numberFormatter>
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                    <binding destination="XfG-lQ-9wD" name="enabled" keyPath="self.connected" id="axT-mw-Xcs">
+                                        <dictionary key="options">
+                                            <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                        </dictionary>
+                                    </binding>
+                                </connections>
+                            </textField>
+                            <stackView distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hf5-m5-eMc" userLabel="Stack View (Connecting)">
+                                <rect key="frame" x="303" y="103" width="157" height="22"/>
+                                <subviews>
+                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GNO-xZ-h7n">
+                                        <rect key="frame" x="0.0" y="-2" width="66" height="25"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="66" id="cVc-Ea-29q"/>
+                                        </constraints>
+                                        <buttonCell key="cell" type="roundTextured" title="Connect" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="JTV-H5-Sa5">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="connect:" target="XfG-lQ-9wD" id="vmx-J5-SvG"/>
+                                            <binding destination="XfG-lQ-9wD" name="hidden" keyPath="self.connected" previousBinding="T0s-dH-pYK" id="3Sl-Hn-DrC"/>
+                                            <binding destination="XfG-lQ-9wD" name="enabled" keyPath="self.connected" id="T0s-dH-pYK">
+                                                <dictionary key="options">
+                                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                                </dictionary>
+                                            </binding>
+                                        </connections>
+                                    </button>
+                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="PaR-Nq-ywC">
+                                        <rect key="frame" x="74" y="-2" width="83" height="25"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="83" id="lhO-1Y-vwZ"/>
+                                        </constraints>
+                                        <buttonCell key="cell" type="roundTextured" title="Disconnect" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="FNJ-cT-Six">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="disconnect:" target="XfG-lQ-9wD" id="gYm-9E-43I"/>
+                                            <binding destination="XfG-lQ-9wD" name="enabled" keyPath="self.connected" id="7N1-sz-XHe"/>
+                                            <binding destination="XfG-lQ-9wD" name="hidden" keyPath="self.connected" previousBinding="7N1-sz-XHe" id="CvI-t7-pfJ">
+                                                <dictionary key="options">
+                                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                                </dictionary>
+                                            </binding>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <visibilityPriorities>
+                                    <integer value="1000"/>
+                                    <integer value="1000"/>
+                                </visibilityPriorities>
+                                <customSpacing>
+                                    <real value="3.4028234663852886e+38"/>
+                                    <real value="3.4028234663852886e+38"/>
+                                </customSpacing>
+                            </stackView>
+                            <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="vEz-at-FnT">
+                                <rect key="frame" x="40" y="84" width="400" height="5"/>
+                            </box>
+                            <stackView distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="55J-aM-Osk" userLabel="Stack View (Echo)">
+                                <rect key="frame" x="20" y="48" width="440" height="22"/>
+                                <subviews>
+                                    <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WtZ-rd-tfg">
+                                        <rect key="frame" x="0.0" y="0.0" width="387" height="22"/>
+                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="RHS-OQ-wIO">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                        <connections>
+                                            <binding destination="XfG-lQ-9wD" name="enabled" keyPath="self.connected" id="h32-QO-a5c"/>
+                                        </connections>
+                                    </textField>
+                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="f19-Xk-CGw">
+                                        <rect key="frame" x="395" y="-2" width="45" height="25"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="45" id="OG3-kC-fOJ"/>
+                                        </constraints>
+                                        <buttonCell key="cell" type="roundTextured" title="Echo" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="BDG-m3-098">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="echo:" target="XfG-lQ-9wD" id="kFe-aq-ZB6"/>
+                                            <binding destination="XfG-lQ-9wD" name="enabled" keyPath="self.connected" id="LFy-iP-5Q4"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="22" id="ZVQ-cd-rDN"/>
+                                    <constraint firstItem="f19-Xk-CGw" firstAttribute="baseline" secondItem="WtZ-rd-tfg" secondAttribute="baseline" id="ztu-oX-rhq"/>
+                                </constraints>
+                                <visibilityPriorities>
+                                    <integer value="1000"/>
+                                    <integer value="1000"/>
+                                </visibilityPriorities>
+                                <customSpacing>
+                                    <real value="3.4028234663852886e+38"/>
+                                    <real value="3.4028234663852886e+38"/>
+                                </customSpacing>
+                            </stackView>
+                            <stackView distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="r4u-Oa-UFD" userLabel="Stack View (Status)">
+                                <rect key="frame" x="20" y="20" width="440" height="20"/>
+                                <subviews>
+                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uHl-Ro-WQ8">
+                                        <rect key="frame" x="-2" y="3" width="51" height="17"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="47" id="BcT-mk-9cN"/>
+                                        </constraints>
+                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Status:" id="TSb-Ux-ywa">
+                                            <font key="font" metaFont="systemBold"/>
+                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oc5-cn-2Px">
+                                        <rect key="frame" x="53" y="3" width="389" height="17"/>
+                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" placeholderString="(connection status)" id="ADH-wS-nJ5">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="oc5-cn-2Px" firstAttribute="baseline" secondItem="uHl-Ro-WQ8" secondAttribute="baseline" id="Z22-GI-zNT"/>
+                                    <constraint firstAttribute="height" constant="20" id="u5C-GS-C4h"/>
+                                </constraints>
+                                <visibilityPriorities>
+                                    <integer value="1000"/>
+                                    <integer value="1000"/>
+                                </visibilityPriorities>
+                                <customSpacing>
+                                    <real value="3.4028234663852886e+38"/>
+                                    <real value="3.4028234663852886e+38"/>
+                                </customSpacing>
+                            </stackView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="SYj-ht-TSB" firstAttribute="leading" secondItem="wNa-ww-66O" secondAttribute="trailing" constant="8" symbolic="YES" id="2GK-k9-Y1A"/>
+                            <constraint firstAttribute="bottom" secondItem="r4u-Oa-UFD" secondAttribute="bottom" constant="20" symbolic="YES" id="5zv-Bn-zhl"/>
+                            <constraint firstAttribute="trailing" secondItem="r4u-Oa-UFD" secondAttribute="trailing" constant="20" symbolic="YES" id="7Pu-1L-Ore"/>
+                            <constraint firstItem="55J-aM-Osk" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" symbolic="YES" id="BcO-5B-JlY"/>
+                            <constraint firstAttribute="trailing" secondItem="vEz-at-FnT" secondAttribute="trailing" constant="40" id="DZQ-Rw-wOy"/>
+                            <constraint firstItem="55J-aM-Osk" firstAttribute="top" secondItem="vEz-at-FnT" secondAttribute="bottom" constant="16" id="GJf-QH-vRc"/>
+                            <constraint firstItem="wNa-ww-66O" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="20" symbolic="YES" id="N5h-Tj-F5S"/>
+                            <constraint firstAttribute="trailing" secondItem="hf5-m5-eMc" secondAttribute="trailing" constant="20" symbolic="YES" id="Q0a-Xd-iS2"/>
+                            <constraint firstItem="wNa-ww-66O" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" symbolic="YES" id="VtM-a4-ENB"/>
+                            <constraint firstItem="vEz-at-FnT" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="40" id="XZj-9e-PI6"/>
+                            <constraint firstItem="r4u-Oa-UFD" firstAttribute="top" secondItem="55J-aM-Osk" secondAttribute="bottom" constant="8" symbolic="YES" id="ZaV-nz-Aon"/>
+                            <constraint firstItem="SYj-ht-TSB" firstAttribute="baseline" secondItem="wNa-ww-66O" secondAttribute="baseline" id="cwt-vJ-Z76"/>
+                            <constraint firstAttribute="trailing" secondItem="55J-aM-Osk" secondAttribute="trailing" constant="20" symbolic="YES" id="l47-wO-KNk"/>
+                            <constraint firstItem="r4u-Oa-UFD" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" symbolic="YES" id="lvF-47-jdH"/>
+                            <constraint firstItem="hf5-m5-eMc" firstAttribute="leading" secondItem="SYj-ht-TSB" secondAttribute="trailing" constant="8" symbolic="YES" id="nPy-0w-oZY"/>
+                            <constraint firstItem="hf5-m5-eMc" firstAttribute="baseline" secondItem="wNa-ww-66O" secondAttribute="baseline" id="xWH-7a-yeF"/>
+                            <constraint firstItem="vEz-at-FnT" firstAttribute="top" secondItem="wNa-ww-66O" secondAttribute="bottom" constant="16" id="zVM-Rd-HB8"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="portField" destination="SYj-ht-TSB" id="FcA-yN-Lrm"/>
+                        <outlet property="serverAddressField" destination="wNa-ww-66O" id="KCv-v4-yjZ"/>
+                        <outlet property="submissionField" destination="WtZ-rd-tfg" id="C2b-ek-8Yz"/>
+                    </connections>
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="655"/>
+            <point key="canvasLocation" x="75" y="744.5"/>
         </scene>
     </scenes>
 </document>
