@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import Foundation
 
 
 // MARK: - Primary Definition
@@ -14,8 +15,28 @@ import Cocoa
 /// Control Echo Transactions.
 class ViewController: NSViewController {
 
+    // MARK: Types
+
+    /// Internally-generated errors.
+    @objc enum ProtocolError: Int, Error {
+        case unknown
+
+        var localizedDescription: String {
+            switch self {
+            case .unknown: return NSLocalizedString("The error was uncategorized or arbitrary.", comment: "")
+            }
+        }
+
+        var asNSError: NSError {
+            return NSError(domain: String(describing: ProtocolError.self), code: self.rawValue, userInfo: [NSLocalizedFailureReasonErrorKey: self.localizedDescription])
+        }
+    }
+
     // MARK: Properties
 
+    /// The session managing any connections.
+    var session: URLSession!
+    
     /// Whether or not a connection is active.
     dynamic var connected: Bool = false
 
@@ -30,6 +51,7 @@ class ViewController: NSViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        session = URLSession(configuration: .ephemeral, delegate: self, delegateQueue: nil)
     }
 
     override var representedObject: Any? {
@@ -53,6 +75,9 @@ extension ViewController {
 
     @IBAction func disconnect(_ sender: NSButton) {
         connected = false
+    #if FORCE_SESSION_INVALIDATION
+        session.invalidateAndCancel()
+    #endif
     }
 
     @IBAction func echo(_ sender: NSButton) {
@@ -60,6 +85,28 @@ extension ViewController {
         guard !dataString.isEmpty && connected else { return }
 
         print("If this was a completed app, the 'echo' would be starting now, using \"\(dataString)\".")
+    }
+
+}
+
+// MARK: Session Delegate
+
+extension ViewController: URLSessionDelegate {
+
+    func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
+        guard session === self.session else { return }
+
+        DispatchQueue.main.async {
+            let alert = NSAlert(error: error ?? ProtocolError.unknown.asNSError)
+            if error != nil {
+                alert.alertStyle = .critical
+            }
+            alert.addButton(withTitle: NSLocalizedString("Quit", comment: "Quit the app"))
+            alert.beginSheetModal(for: self.view.window!) {
+                assert($0 == NSAlertFirstButtonReturn)
+                self.view.window?.close()
+            }
+        }
     }
 
 }

@@ -404,6 +404,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.ctmacuser.Echo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -498,6 +499,7 @@
 				F31DD3251F5D9CFC00A998EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		F31DD3261F5D9CFC00A998EC /* Build configuration list for PBXNativeTarget "EchoTests" */ = {
 			isa = XCConfigurationList;
@@ -506,6 +508,7 @@
 				F31DD3281F5D9CFC00A998EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		F31DD3291F5D9CFC00A998EC /* Build configuration list for PBXNativeTarget "EchoUITests" */ = {
 			isa = XCConfigurationList;
@@ -514,6 +517,7 @@
 				F31DD32B1F5D9CFC00A998EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
