@@ -17,6 +17,12 @@ class ViewController: NSViewController {
 
     // MARK: Types
 
+    /// Implementation constants.
+    enum Constants {
+        /// The default port for the Echo protocol.
+        static let defaultEchoPort = 7
+    }
+
     /// Internally-generated errors.
     @objc enum ProtocolError: Int, Error {
         case unknown
@@ -36,9 +42,11 @@ class ViewController: NSViewController {
 
     /// The session managing any connections.
     var session: URLSession!
+    /// The current connection.
+    dynamic var task: URLSessionTask?
     
     /// Whether or not a connection is active.
-    dynamic var connected: Bool = false
+    dynamic var connected: Bool { return task != nil }
 
     // Outlets
     @IBOutlet weak var serverAddressField: NSTextField!
@@ -60,26 +68,37 @@ class ViewController: NSViewController {
         }
     }
 
+    // MARK: KVO Conformance
+
+    class func keyPathsForValuesAffectingConnected() -> Set<String> {
+        return [#keyPath(task)]
+    }
+
 }
 
 // MARK: Actions
 
 extension ViewController {
 
+    /// Connect to the server with the given hostname at the given port.
     @IBAction func connect(_ sender: NSButton) {
-        let hostString = serverAddressField.stringValue
-        guard !hostString.isEmpty && !connected else { return }
+        guard !connected, let echoURL = echoTarget.url, let host = echoURL.host, !host.isEmpty, let port = echoURL.port, (1..<(1 << 16)).contains(port) else { return }
 
-        connected = true
+        task = session.streamTask(withHostName: host, port: port)
+        task?.taskDescription = echoURL.absoluteString
+        task?.resume()
     }
 
+    /// Disconnect from the server.
     @IBAction func disconnect(_ sender: NSButton) {
-        connected = false
+        task?.cancel()
+        task = nil
     #if FORCE_SESSION_INVALIDATION
         session.invalidateAndCancel()
     #endif
     }
 
+    /// Send the given data for an echo transaction.
     @IBAction func echo(_ sender: NSButton) {
         let dataString = submissionField.stringValue
         guard !dataString.isEmpty && connected else { return }
@@ -89,9 +108,20 @@ extension ViewController {
 
 }
 
-// MARK: Session Delegate
+// MARK: Session & Task Delegate
 
-extension ViewController: URLSessionDelegate {
+extension ViewController: URLSessionTaskDelegate {
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        guard session == self.session, task === self.task else { return }
+
+        DispatchQueue.main.async {
+            self.task = nil
+            if let error = error {
+                NSAlert(error: (error as? ProtocolError)?.asNSError ?? error).beginSheetModal(for: self.view.window!)
+            }
+        }
+    }
 
     func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
         guard session === self.session else { return }
@@ -107,6 +137,21 @@ extension ViewController: URLSessionDelegate {
                 self.view.window?.close()
             }
         }
+    }
+
+}
+
+// MARK: Helpers
+
+extension ViewController {
+
+    /// A URL storing the current hostname and port.
+    var echoTarget: URLComponents {
+        var result = URLComponents()
+        result.scheme = "echo"
+        result.host = serverAddressField.stringValue
+        result.port = { $0 == 0 ? Constants.defaultEchoPort : $0 }(portField.integerValue)
+        return result
     }
 
 }
