@@ -32,10 +32,6 @@ class ViewController: NSViewController {
             case .unknown: return NSLocalizedString("The error was uncategorized or arbitrary.", comment: "")
             }
         }
-
-        var asNSError: NSError {
-            return NSError(domain: String(describing: ProtocolError.self), code: self.rawValue, userInfo: [NSLocalizedFailureReasonErrorKey: self.localizedDescription])
-        }
     }
 
     // MARK: Properties
@@ -113,12 +109,19 @@ extension ViewController {
 extension ViewController: URLSessionTaskDelegate {
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard session == self.session, task === self.task else { return }
+        guard session === self.session, task === self.task else { return }
 
         DispatchQueue.main.async {
             self.task = nil
             if let error = error {
-                NSAlert(error: (error as? ProtocolError)?.asNSError ?? error).beginSheetModal(for: self.view.window!)
+                let alert = NSAlert(error: error)
+                let nserr = error as NSError
+                switch (nserr.domain, nserr.code) {
+                case (NSURLErrorDomain, NSURLErrorCancelled):
+                    break
+                default:
+                    alert.beginSheetModal(for: self.view.window!)
+                }
             }
         }
     }
@@ -127,7 +130,7 @@ extension ViewController: URLSessionTaskDelegate {
         guard session === self.session else { return }
 
         DispatchQueue.main.async {
-            let alert = NSAlert(error: error ?? ProtocolError.unknown.asNSError)
+            let alert = NSAlert(error: error ?? ProtocolError.unknown)
             if error != nil {
                 alert.alertStyle = .critical
             }
