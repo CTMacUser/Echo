@@ -21,6 +21,8 @@ class ViewController: NSViewController {
     enum Constants {
         /// The default port for the Echo protocol.
         static let defaultEchoPort = 7
+        /// The number of consecutive empty-data reads before giving up.
+        static let nilDataReadLimit = 20
     }
     
     /// Status during echo transaction.
@@ -41,11 +43,14 @@ class ViewController: NSViewController {
 
     /// Internally-generated errors.
     @objc enum ProtocolError: Int, Error {
-        case unknown
+        case unknown, mismatchedData, insufficentData, tooManyNilReads
 
         var localizedDescription: String {
             switch self {
             case .unknown: return NSLocalizedString("The error was uncategorized or arbitrary.", comment: "")
+            case .mismatchedData: return NSLocalizedString("The given data did not match the expected data.", comment: "")
+            case .insufficentData: return NSLocalizedString("Not enough data was provided.", comment: "")
+            case .tooManyNilReads: return NSLocalizedString("There were too many reads without any data.", comment: "")
             }
         }
     }
@@ -132,7 +137,69 @@ extension ViewController {
     @IBAction func echo(_ sender: NSButton) {
         guard connected, let data = submissionField.stringValue.data(using: .utf8), !data.isEmpty else { return }
 
-        print("If this was a completed app, the 'echo' would be starting now, using \"\(dataString)\".")
+        session.delegateQueue.addOperation {
+            self.sendEcho(of: data)
+        }
+    }
+
+}
+
+// MARK: Echo Protocol
+
+extension ViewController {
+
+    /// Send an echo to the server.
+    func sendEcho(of data: Data) {
+        DispatchQueue.main.async { self.status = .sending }
+        task!.write(data, timeout: session.configuration.timeoutIntervalForRequest) {
+            if let error = $0 {
+                self.showAlert(for: error, settingStatus: .errorWhileSending)
+            } else {
+                self.session.delegateQueue.addOperation {
+                    self.receiveEcho(supposedlyOf: data, permittingThisManyNilReads: Constants.nilDataReadLimit)
+                }
+            }
+        }
+    }
+
+    /// Receive an echo from the server, checking if the data matches.
+    func receiveEcho(supposedlyOf data: Data, permittingThisManyNilReads limit: Int) {
+        guard !data.isEmpty else {
+            // Previous rounds ended normally, without error.
+            DispatchQueue.main.async { self.status = .idle }
+            return
+        }
+
+        DispatchQueue.main.async { self.status = .receiving }
+        task!.readData(ofMinLength: 1, maxLength: data.count, timeout: session.configuration.timeoutIntervalForRequest) {
+            if let error = $2 {
+                self.showAlert(for: error, settingStatus: .errorWhileReceiving)
+                return
+            }
+            let foundEOF = $1
+            if let receivedData = $0 {
+                if data.starts(with: receivedData) {
+                    let remainingData = Data(data.dropFirst(receivedData.count))
+                    if foundEOF && !remainingData.isEmpty {
+                        self.showAlert(for: ProtocolError.insufficentData, settingStatus: .errorWhileReceiving)
+                    } else {
+                        self.session.delegateQueue.addOperation {
+                            self.receiveEcho(supposedlyOf: remainingData, permittingThisManyNilReads: Constants.nilDataReadLimit)
+                        }
+                    }
+                } else {
+                    self.showAlert(for: ProtocolError.mismatchedData, settingStatus: .errorWhileReceiving)
+                }
+            } else if foundEOF {
+                self.showAlert(for: ProtocolError.insufficentData, settingStatus: .errorWhileReceiving)
+            } else if limit <= 0 {
+                self.showAlert(for: ProtocolError.tooManyNilReads, settingStatus: .errorWhileReceiving)
+            } else {
+                self.session.delegateQueue.addOperation {
+                    self.receiveEcho(supposedlyOf: data, permittingThisManyNilReads: limit - 1)
+                }
+            }
+        }
     }
 
 }
@@ -204,6 +271,15 @@ extension ViewController {
         result.host = serverAddressField.stringValue
         result.port = { $0 == 0 ? Constants.defaultEchoPort : $0 }(portField.integerValue)
         return result
+    }
+
+    /// Post an alert for a given error.
+    func showAlert(for error: Error, settingStatus to: Status) {
+        DispatchQueue.main.async {
+            let alert = NSAlert(error: error)
+            self.status = to
+            alert.beginSheetModal(for: self.view.window!)
+        }
     }
 
 }
