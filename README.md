@@ -1,4 +1,4 @@
-# echo
+# Echo
 
 I made this app to try out `URLSessionStreamTask` (or `NSURLSessionStreamTask` for Objective-C users) since I didn't see it used anywhere, except for [one bug demonstration on GitHub](https://github.com/belkevich/stream-task).
 
