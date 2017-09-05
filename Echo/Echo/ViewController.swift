@@ -22,6 +22,22 @@ class ViewController: NSViewController {
         /// The default port for the Echo protocol.
         static let defaultEchoPort = 7
     }
+    
+    /// Status during echo transaction.
+    @objc enum Status: Int, CustomStringConvertible {
+        case disconnected, idle, sending, errorWhileSending, receiving, errorWhileReceiving
+
+        var description: String {
+            switch self {
+            case .disconnected: return NSLocalizedString("Disconnected.", comment: "When there is no connection")
+            case .idle: return NSLocalizedString("Idle.", comment: "The connection is unused")
+            case .sending: return NSLocalizedString("Sending…", comment: "Data is being sent")
+            case .errorWhileSending: return NSLocalizedString("Error while sending!", comment: "An error occured whle sending")
+            case .receiving: return NSLocalizedString("Receiving…", comment: "Data is being received")
+            case .errorWhileReceiving: return NSLocalizedString("Error while receiving!", comment: "An error occured whlie receiving")
+            }
+        }
+    }
 
     /// Internally-generated errors.
     @objc enum ProtocolError: Int, Error {
@@ -40,9 +56,13 @@ class ViewController: NSViewController {
     var session: URLSession!
     /// The current connection.
     dynamic var task: URLSessionTask?
+    /// The current connection status.
+    dynamic var status: Status = .disconnected
     
     /// Whether or not a connection is active.
     dynamic var connected: Bool { return task != nil }
+    /// User-readable status.
+    dynamic var statusText: String { return status.description }
 
     // Outlets
     @IBOutlet weak var serverAddressField: NSTextField!
@@ -70,6 +90,10 @@ class ViewController: NSViewController {
         return [#keyPath(task)]
     }
 
+    class func keyPathsForValuesAffectingStatusText() -> Set<String> {
+        return [#keyPath(status)]
+    }
+
 }
 
 // MARK: Actions
@@ -81,6 +105,7 @@ extension ViewController {
         guard !connected, let echoURL = echoTarget.url, let host = echoURL.host, !host.isEmpty, let port = echoURL.port, (1..<(1 << 16)).contains(port) else { return }
 
         task = session.streamTask(withHostName: host, port: port)
+        status = .idle
         task?.taskDescription = echoURL.absoluteString
         task?.resume()
     }
@@ -88,6 +113,7 @@ extension ViewController {
     /// Disconnect from the server.
     @IBAction func disconnect(_ sender: NSButton) {
         task?.cancel()
+        status = .disconnected
         task = nil
     #if FORCE_SESSION_INVALIDATION
         session.invalidateAndCancel()
@@ -112,6 +138,7 @@ extension ViewController: URLSessionTaskDelegate {
         guard session === self.session, task === self.task else { return }
 
         DispatchQueue.main.async {
+            self.status = .disconnected
             self.task = nil
             if let error = error {
                 let alert = NSAlert(error: error)
