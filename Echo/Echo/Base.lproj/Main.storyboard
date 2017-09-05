@@ -802,7 +802,7 @@
                                         </buttonCell>
                                         <connections>
                                             <action selector="echo:" target="XfG-lQ-9wD" id="kFe-aq-ZB6"/>
-                                            <binding destination="XfG-lQ-9wD" name="enabled" keyPath="self.connected" id="LFy-iP-5Q4"/>
+                                            <binding destination="XfG-lQ-9wD" name="enabled" keyPath="self.canEcho" id="Heo-B9-f4H"/>
                                         </connections>
                                     </button>
                                 </subviews>

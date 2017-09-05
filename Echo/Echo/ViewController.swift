@@ -63,6 +63,10 @@ class ViewController: NSViewController {
     dynamic var connected: Bool { return task != nil }
     /// User-readable status.
     dynamic var statusText: String { return status.description }
+    /// Whether or not an echo can be sent; i.e. be connected and not doing a previous echo.
+    dynamic var canEcho: Bool {
+        return [.idle, .errorWhileSending, .errorWhileReceiving].contains(status)
+    }
 
     // Outlets
     @IBOutlet weak var serverAddressField: NSTextField!
@@ -91,6 +95,10 @@ class ViewController: NSViewController {
     }
 
     class func keyPathsForValuesAffectingStatusText() -> Set<String> {
+        return [#keyPath(status)]
+    }
+
+    class func keyPathsForValuesAffectingCanEcho() -> Set<String> {
         return [#keyPath(status)]
     }
 
