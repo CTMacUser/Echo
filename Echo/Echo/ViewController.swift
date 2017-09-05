@@ -55,7 +55,7 @@ class ViewController: NSViewController {
     /// The session managing any connections.
     var session: URLSession!
     /// The current connection.
-    dynamic var task: URLSessionTask?
+    dynamic var task: URLSessionStreamTask?
     /// The current connection status.
     dynamic var status: Status = .disconnected
     
@@ -130,8 +130,7 @@ extension ViewController {
 
     /// Send the given data for an echo transaction.
     @IBAction func echo(_ sender: NSButton) {
-        let dataString = submissionField.stringValue
-        guard !dataString.isEmpty && connected else { return }
+        guard connected, let data = submissionField.stringValue.data(using: .utf8), !data.isEmpty else { return }
 
         print("If this was a completed app, the 'echo' would be starting now, using \"\(dataString)\".")
     }
@@ -140,7 +139,22 @@ extension ViewController {
 
 // MARK: Session & Task Delegate
 
-extension ViewController: URLSessionTaskDelegate {
+extension ViewController: URLSessionStreamDelegate {
+
+    func urlSession(_ session: URLSession, betterRouteDiscoveredFor streamTask: URLSessionStreamTask) {
+        guard session === self.session, self.task === streamTask, let urlString = streamTask.taskDescription, let url = URL(string: urlString), let host = url.host, let port = url.port else { return }
+
+        let newTask = session.streamTask(withHostName: host, port: port)
+        newTask.taskDescription = urlString
+        DispatchQueue.main.async {
+            guard self.canEcho else { return }
+
+            self.task?.cancel()
+            self.task = newTask
+            self.status = .idle
+            self.task?.resume()
+        }
+    }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard session === self.session, task === self.task else { return }
